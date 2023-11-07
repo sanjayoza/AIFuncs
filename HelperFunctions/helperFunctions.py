@@ -7,6 +7,7 @@ import numpy as np
 from pathlib import Path
 import os
 import tensorflow as tf
+import subprocess
 
 
 def walk_through_dir(dir_path):
@@ -93,4 +94,19 @@ def plotLossCurve(history, loss_name = 'loss',
     plt.ylabel(loss_name)
     plt.xlabel('Epochs')
     plt.legend();
+
+
+def getFromGCS(fname, toloc):
+    """
+    Get file from google cloud storage
+    """
+    cloc = "https://storage.googleapis.com/courses-datasets/AI-ML-Toolkit/"
+    #dnfile = "IMDBDataset.csv"
+    dnfile = cloc + fname
+    print(f'Cloud file location: {dnfile}')
+    print(f'to location: {toloc}')
+    result = subprocess.run(['wget',  str(dnfile),  '-NP',  str(toloc)])
+    print(result)
+    print(f'Got file: {dnfile} copied to {toloc}')
+
 
