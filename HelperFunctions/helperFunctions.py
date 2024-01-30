@@ -110,3 +110,36 @@ def getFromGCS(fname, toloc):
     print(f'Got file: {dnfile} copied to {toloc}')
 
 
+def setUpTransferLearning(cloud_file, COLAB = False):
+    """
+    Set files for transfer learning.
+    Copy the zip file from GCS and unzip it
+    Args:
+        cloud_file: name of the zipfile to download from GCS
+        COLAB: flag to indicate if working in COLAB environment
+    """
+
+    currLoc = os.getcwd()
+    print(f'Current directory location {currLoc}')
+    if COLAB is True:
+        dest = './'
+        upath = dest + '/FoodClasses'
+    else:
+        dest = '../datasets'
+        upath = dest + '/FoodClasses'
+
+    # download the zip file
+    getFromGCS(cloud_file, dest)
+
+    fullpath = dest + '/' + cloud_file
+    print(f'fullpath: {fullpath}')
+    print(f'upath: {upath}')
+    os.chdir(dest)
+
+    # unzip the file
+    import zipfile
+    zref = zipfile.ZipFile(fullpath, 'r')
+    zref.extractall()
+    zref.close()
+    walk_through_dir(upath)
+    return upath
