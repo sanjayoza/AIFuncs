@@ -143,3 +143,13 @@ def setUpTransferLearning(cloud_file, COLAB = False):
     zref.close()
     walk_through_dir(upath)
     return upath
+
+def mountGoogleDrive():
+    """
+    Mount Google Drive
+    """
+    from google.colab import drive
+    mydrive = '/content/gdrive/'
+    drive.mount(mydrive)
+    os.system("ls $mydrive")
+    return mydrive
