@@ -42,7 +42,7 @@ def set_seed(seed: int = 2345):
     np.random.seed(seed)
 
 
-def plotTrainingCurves(history, figuresize = (8,6)):
+def plotTrainingCurves(history, figuresize = (8,6), xlim = None, ylim = None):
     """
     Plots the training and loss curves
 
@@ -69,6 +69,10 @@ def plotTrainingCurves(history, figuresize = (8,6)):
     ax2.legend()
     ax2.set_title('Training Loss')
 
+    if xlim:
+        plt.xlim = xlim
+    if ylim:
+        plt.ylim = ylim
     plt.axis(True);
 
 
