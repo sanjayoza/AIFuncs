@@ -10,7 +10,7 @@ import tensorflow as tf
 import subprocess
 
 
-def walk_through_dir(dir_path):
+def walk_through_dir(dir_path, printfnames = False):
     """
     Walks through dir_path returning its contents.
     Args:
@@ -24,6 +24,9 @@ def walk_through_dir(dir_path):
     """
     for dirpath, dirnames, filenames in os.walk(dir_path):
         print(f"There are {len(dirnames)} directories and {len(filenames)} images in '{dirpath}'.")
+        if printfnames is True:
+            for f in filenames:
+                print(f)
 
 
 def set_seed(seed: int = 2345):
