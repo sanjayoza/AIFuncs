@@ -174,7 +174,13 @@ def downloadFromCloud(cloudfile, subfolder = None, COLAB = False, isZipped = Fal
     print(f'Current directory location {currLoc}')
     if COLAB is True:
         dest = './'
-        upath = dest + cloudfile
+        if subfolder:
+            upath = dest + subfolder + '/' + cloudfile
+            srcpath = subfolder + '/' + cloudfile
+            destpath = dest + '/' + cloudfile
+        else:
+            destpath = dest + '/' + cloudfile
+            srcpath = cloudfile
     else:
         dest = '../datasets'
         if subfolder:
