@@ -177,7 +177,7 @@ def downloadFromCloud(cloudfile, subfolder = None, COLAB = False, isZipped = Fal
         if subfolder:
             upath = dest + subfolder + '/' + cloudfile
             srcpath = subfolder + '/' + cloudfile
-            destpath = dest + '/' + cloudfile
+            destpath = dest
         else:
             destpath = dest + '/' + cloudfile
             srcpath = cloudfile
