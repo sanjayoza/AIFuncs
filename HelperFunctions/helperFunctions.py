@@ -160,3 +160,59 @@ def mountGoogleDrive():
     drive.mount(mydrive)
     os.system("ls $mydrive")
     return mydrive
+
+def downloadFromCloud(cloudfile, subfolder = None, COLAB = False, isZipped = False):
+    """
+    Download file from Google Cloud
+    Args:
+    cloudfile: File name to download
+    subfolder: subfolder name if the files are in it
+    COLAB: Flag to indicate if working in COLAB environment
+    isZipped: Flag to indicate if the file is zipped
+    """
+    currLoc = os.getcwd()
+    print(f'Current directory location {currLoc}')
+    if COLAB is True:
+        dest = './'
+        upath = dest + cloudfile
+    else:
+        dest = '../datasets'
+        if subfolder:
+            upath = dest + subfolder + '/' + cloudfile
+            srcpath = subfolder + '/' + cloudfile
+            destpath = dest + '/' + subfolder
+        else:
+            destpath = dest + '/' + cloudfile
+            srcpath = cloudfile
+
+    print(f'src: {srcpath} dest: {destpath}')
+
+    # download the file
+    getFromGCS(srcpath, destpath)
+
+    # unzip the file if zipped
+    if isZipped is True:
+        import zipfile
+        if subfolder:
+            fullpath = dest + '/' + subfolder + '/'
+            os.chdir(fullpath)
+            print(f'current dir {os.getcwd()}')
+            fullpath = cloudfile
+        else:
+            fullpath = dest
+        print(f'fullpath: {fullpath}')
+        zref = zipfile.ZipFile(fullpath, 'r')
+        zref.extractall()
+        zref.close()
+        os.chdir(currLoc)
+        print(f'current dir {os.getcwd()}')
+
+
+
+
+# if __name__ == '__main__':
+#     fname = 'Pneumonia.zip'
+#     subfolder = 'Medical'
+#     isZipped = True
+#     downloadFromCloud(fname, isZipped = isZipped, subfolder = subfolder)
+
