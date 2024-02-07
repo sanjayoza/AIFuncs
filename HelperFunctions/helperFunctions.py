@@ -201,8 +201,9 @@ def downloadFromCloud(cloudfile, subfolder = None, COLAB = False, isZipped = Fal
         import zipfile
         if subfolder:
             fullpath = dest + '/' + subfolder + '/'
-            os.chdir(fullpath)
-            print(f'current dir {os.getcwd()}')
+            if COLAB == False:
+                os.chdir(fullpath)
+                print(f'current dir {os.getcwd()}')
             fullpath = cloudfile
         else:
             fullpath = dest
