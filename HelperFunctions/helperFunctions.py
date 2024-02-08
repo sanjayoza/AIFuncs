@@ -207,6 +207,8 @@ def downloadFromCloud(cloudfile, subfolder = None, COLAB = False, isZipped = Fal
             fullpath = cloudfile
         else:
             fullpath = dest + '/' + cloudfile
+            if COLAB == False:
+                os.chdir(dest)
         print(f'fullpath: {fullpath}')
         zref = zipfile.ZipFile(fullpath, 'r')
         zref.extractall()
