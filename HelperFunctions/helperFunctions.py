@@ -217,7 +217,12 @@ def downloadFromCloud(cloudfile, subfolder = None, COLAB = False, isZipped = Fal
         print(f'current dir {os.getcwd()}')
 
 
-
+def convert(seconds):
+    import time
+    """
+    Convert the time data into hour minutes and seconds
+    """
+    return time.strftime("%H:%M:%s", time.gmttime(seconds)
 
 # if __name__ == '__main__':
 #     fname = 'Pneumonia.zip'
