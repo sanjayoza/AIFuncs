@@ -6,9 +6,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 import os
-import tensorflow as tf
 import subprocess
 
+import pandas as pd
+
+
+# ==========================================================================
+# Dataset Downloading Functions:
+# ==========================================================================
 
 def walk_through_dir(dir_path, printfnames = False):
     """
@@ -29,80 +34,6 @@ def walk_through_dir(dir_path, printfnames = False):
                 print(f)
 
 
-def set_seed(seed: int = 2345):
-    """
-    Sets a random seed
-
-    Args:
-        seed (int, optional): Random seed to set - default 2345
-
-    """
-
-    tf.random.set_seed(seed)
-    np.random.seed(seed)
-
-
-def plotTrainingCurves(history, figuresize = (8,6), xlim = None, ylim = None):
-    """
-    Plots the training and loss curves
-
-    Args:
-        history: returned from the model training
-        figuresize: figsize parameter for matplotlib - a tuple (8,6)
-    """
-
-    fig, (ax1, ax2) = plt.subplots(nrows = 1, ncols = 2, figsize = figuresize)
-    epochs = range(len(history.history['loss']))
-
-    # Plot accuracy
-    ax1.plot(epochs, history.history['accuracy'], label = 'accuracy')
-    ax1.plot(epochs, history.history['val_accuracy'], label = 'validation')
-    ax1.set(xlabel = 'Epochs', ylabel = 'accuracy')
-    ax1.legend()
-    ax1.set_title('Training Accuracy')
-
-    # Plot Loss
-    ax2.plot(epochs, history.history['loss'], label = 'loss')
-    ax2.plot(epochs, history.history['val_loss'], label = 'validation')
-    #ax2.ylabel(['loss', 'vla_loss'])
-    ax2.set(xlabel='Epochs', ylabel = 'loss')
-    ax2.legend()
-    ax2.set_title('Training Loss')
-
-    if xlim:
-        plt.xlim = xlim
-    if ylim:
-        plt.ylim = ylim
-    plt.axis(True);
-
-
-def plotLossCurve(history, loss_name = 'loss', 
-                  figuresize = (5,4), 
-                  ylim = None):
-    """
-    Plots the loss curves
-
-    Args:
-        history: returned from the model training
-        loss_name: name of loss function used
-        figuresize: figsize parameter for matplotlib - a tuple (5,4)
-        ylim: y-axis limits
-    """
-    epochs = np.arange(0, len(history.history[loss_name]))
-    plt.figure(figsize = figuresize)
-    #plt.style.use('ggplot')
-    
-    plt.plot(epochs, history.history[loss_name], label = loss_name)
-    plt.plot(epochs, history.history['val_' + loss_name], label = 'validation')
-    
-    if ylim:
-        plt.ylim = ylim
-    
-    plt.ylabel(loss_name)
-    plt.xlabel('Epochs')
-    plt.legend();
-
-
 def getFromGCS(fname, toloc):
     """
     Get file from google cloud storage
@@ -117,39 +48,6 @@ def getFromGCS(fname, toloc):
     print(f'Got file: {dnfile} copied to {toloc}')
 
 
-def setUpTransferLearning(cloud_file, COLAB = False):
-    """
-    Set files for transfer learning.
-    Copy the zip file from GCS and unzip it
-    Args:
-        cloud_file: name of the zipfile to download from GCS
-        COLAB: flag to indicate if working in COLAB environment
-    """
-
-    currLoc = os.getcwd()
-    print(f'Current directory location {currLoc}')
-    if COLAB is True:
-        dest = './'
-        upath = dest + '/FoodClasses'
-    else:
-        dest = '../datasets'
-        upath = dest + '/FoodClasses'
-
-    # download the zip file
-    getFromGCS(cloud_file, dest)
-
-    fullpath = dest + '/' + cloud_file
-    print(f'fullpath: {fullpath}')
-    print(f'upath: {upath}')
-    os.chdir(dest)
-
-    # unzip the file
-    import zipfile
-    zref = zipfile.ZipFile(fullpath, 'r')
-    zref.extractall()
-    zref.close()
-    walk_through_dir(upath)
-    return upath
 
 def mountGoogleDrive():
     """
@@ -216,6 +114,17 @@ def downloadFromCloud(cloudfile, subfolder = None, COLAB = False, isZipped = Fal
         os.chdir(currLoc)
         print(f'current dir {os.getcwd()}')
 
+# ==========================================================================
+# Miscellaeous Utility Functions:
+# ==========================================================================
+def set_seed(seed: int = 2345):
+    """
+    Sets a random seed
+    Args:
+        seed (int, optional): Random seed to set - default 2345
+    """
+
+    np.random.seed(seed)
 
 def convert(seconds):
     import time
@@ -223,6 +132,168 @@ def convert(seconds):
     Convert the time data into hour minutes and seconds
     """
     return time.strftime("%H:%M:%s", time.gmtime(seconds))
+
+# ==========================================================================
+# Classfication Related Utility Functions:
+# ==========================================================================
+import seaborn as sns
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
+
+def plotConfusionMatrix(y_test, y_pred, class_names):
+    """
+    Plot the confusiton matrix
+    Args:
+        y_test: test labels
+        y_pred: predicted labels
+        class_names: label values
+    """
+    cm = confusion_matrix(y_test, y_pred)
+    cseg = class_names
+    cm_df = pd.DataFrame(cm, index = cseg, columns = cseg)
+    plt.figure(figsize = (5,4))
+    sns.heatmap(cm_df, annot=True, cmap=plt.cm.Blues, fmt = 'g', annot_kws={"size": 16})
+    sns.set(font_scale=0.5)
+    plt.title('Confusion Matrix\n', fontsize = 18)
+    plt.ylabel('True label', fontsize = 16)
+    plt.xlabel('Predicted label', fontsize = 16);
+
+def printSummary(y_test, y_pred):
+    """
+    Print summary - number of correct and incorrect predictions - pass the confusion matrix
+    Args:
+        y_test: test labels
+        y_pred: predicted labels
+    """
+    cm = confusion_matrix(y_test, y_pred)
+    correct = cm[0, 0] + cm[1, 1]
+    error = cm[0, 1] + cm[1,0]
+    total = correct + error
+    print('Correct predictions: {} of {}'.format(correct, total))
+    print('Errored predictions: {} of {}'. format(error, total))
+
+
+def plotRoC(classifier, Xtest, ytest, title = " "):
+    """
+    Function to plot Receiver Operating Curve (ROC)
+    Args:
+        classifier: classification model used
+        Xtest: Testing data
+        ytest: Testing labels
+        title: Title for the plot
+    """
+    fig,ax = plt.subplots(figsize = (6,4))
+    classAUC = roc_auc_score(ytest, classifier.predict(Xtest))
+    fpr, tpr, thresholds = roc_curve(ytest, classifier.predict_proba(Xtest)[:,1])
+    auc = str(np.round(classAUC, 4))
+    # disable axes
+    ax.grid(False)
+    # set background color to white
+    ax.set_facecolor('white')
+    # set the border around the axes
+    for spine in ax.spines.values():
+        spine.set_edgecolor('black')
+        spine.set_linewidth(1)
+    plt.plot([0, 1], [0, 1], 'k--', label='Random guess', color = 'red')
+    plt.plot(fpr, tpr, label = "Train AUC " + auc)
+    plt.ylabel('False Positive Rate', fontsize = 16)
+    plt.xlabel('True Positive Rate', fontsize = 16)
+    plt.title('RoC ' + title, fontsize = 16)
+    plt.legend(loc = 4, fontsize = 16, facecolor = 'white');
+
+def extract_classification_report_df(y_true, y_pred):
+    """
+    Function will return classfication report as dataframe
+    Args:
+        y_true: testing labels from dataset
+        y_pred: predicted labels
+    """
+    # Extract the classification report as a dictionary
+    report = classification_report(y_true, y_pred, output_dict=True)
+    
+    # Convert the dictionary to a pandas DataFrame for easy inspection
+    df = pd.DataFrame(report).transpose()
+    return df
+
+
+def extract_classification_report_info(y_true, y_pred):
+    """
+    Function that will return information from the classification report as
+    key value pairs
+    Args:
+        y_true: testing labels from dataset
+        y_pred: predicted labels
+    """
+
+    # Generate the classification report as a string
+    report = classification_report(y_true, y_pred, output_dict=True)
+    
+    # Extract information from the report
+    accuracy = report['accuracy']  # Accuracy is available in the report as a key
+    labels = list(report.keys())[:-3]  # The last three entries are for accuracy, macro avg, and weighted avg
+    labels_info = {label: report[label] for label in labels}
+    
+    # Prepare the extracted information in a structured format (e.g., a dictionary)
+    extracted_info = {
+        'accuracy': accuracy,
+        'labels': labels,
+        'precision': {label: labels_info[label]['precision'] for label in labels},
+        'recall': {label: labels_info[label]['recall'] for label in labels},
+        'f1-score': {label: labels_info[label]['f1-score'] for label in labels},
+        'support': {label: labels_info[label]['support'] for label in labels}
+    }
+
+    # Return the information as a dictionary
+    return extracted_info
+
+# Example usage:
+# Assuming you have `y_test` and `y_pred` from your model
+# y_true = [0, 1, 1, 0, 1, 0]  # Example ground truth values
+# y_pred = [0, 1, 0, 0, 1, 1]  # Example predicted values
+
+# info = extract_classification_report_info(y_true, y_pred)
+# print(info)
+
+
+def get_dataframe(y_test, y_pred, class_names, modelname):
+    """
+    Function the used the extract_classification_report_info to parse information
+    that can be coverted to a dataframe
+    Args:
+        y_test: test labels from dataset
+        y_pred: predicted labels
+        class_names: label values
+        modelname: classifier model used
+    Returns a dataframe with appropriate classification report
+
+    """
+    data = extract_classification_report_info(y_test, y_pred)
+    labels = data['labels']
+    idx = 0
+    retdata = []
+    for i in labels:
+        #print(f"precision {data['precision'][i]}, recall: {data['recall'][i]}, f1: {data['f1-score'][i]}, support: {data['support'][i]}")
+        row = dict()
+        if idx == 0:
+            row['model'] = modelname
+        else:
+            row['model'] = ""
+        row['class'] = class_names[idx]
+        if idx == 0:
+            row['accuracy'] = data['accuracy']
+        else:
+            row['accuracy'] = ""
+        row['precision'] = data['precision'][i]
+        row['recall'] = data['recall'][i]
+        row['f1-score'] = data['f1-score'][i]
+        row['support'] = data['support'][i]
+        idx += 1
+        retdata.append(row)
+    df = pd.DataFrame(retdata)
+    return df
 
 # if __name__ == '__main__':
 #     fname = 'Pneumonia.zip'
