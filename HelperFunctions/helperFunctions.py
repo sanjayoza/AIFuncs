@@ -133,6 +133,15 @@ def convert(seconds):
     """
     return time.strftime("%H:%M:%s", time.gmtime(seconds))
 
+from IPython.display import Markdown, display
+def printmd(string, color=None):
+    """
+    Function to print string as markdown
+    """
+    pd.options.display.float_format = '{:.4f}'.format
+    colorstr = "<span style='color:{}'>{}</span>".format(color, string)
+    display(Markdown(colorstr))
+
 # ==========================================================================
 # Classfication Related Utility Functions:
 # ==========================================================================
