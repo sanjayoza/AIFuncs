@@ -208,8 +208,8 @@ def plotRoC(classifier, Xtest, ytest, title = " "):
         spine.set_linewidth(1)
     plt.plot([0, 1], [0, 1], 'k--', label='Random guess', color = 'red')
     plt.plot(fpr, tpr, label = "Train AUC " + auc)
-    plt.ylabel('False Positive Rate', fontsize = 16)
-    plt.xlabel('True Positive Rate', fontsize = 16)
+    plt.ylabel('True Positive Rate', fontsize = 16)
+    plt.xlabel('False Positive Rate', fontsize = 16)
     plt.title('RoC ' + title, fontsize = 16)
     plt.legend(loc = 4, fontsize = 16, facecolor = 'white');
 
