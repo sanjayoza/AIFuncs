@@ -172,17 +172,24 @@ def plotConfusionMatrix(y_test, y_pred, class_names):
 
 def printSummary(y_test, y_pred):
     """
-    Print summary - number of correct and incorrect predictions - pass the confusion matrix
+    Print summary - number of correct and incorrect predictions for multi-class classification.
+    
     Args:
-        y_test: test labels
-        y_pred: predicted labels
+        y_test: Actual test labels
+        y_pred: Predicted labels
     """
     cm = confusion_matrix(y_test, y_pred)
-    correct = cm[0, 0] + cm[1, 1]
-    error = cm[0, 1] + cm[1,0]
+    
+    # Correct predictions: Sum of diagonal elements in confusion matrix
+    correct = cm.diagonal().sum()
+    
+    # Errors: Sum of all off-diagonal elements
+    error = cm.sum() - correct
     total = correct + error
-    print('Correct predictions: {} of {}'.format(correct, total))
-    print('Errored predictions: {} of {}'. format(error, total))
+
+    print(f'✅ Correct predictions: {correct} of {total}')
+    print(f'❌ Errored predictions: {error} of {total}')
+    #print(f'Confusion Matrix:\n{cm}')
 
 
 def plotRoC(classifier, Xtest, ytest, title = " "):
