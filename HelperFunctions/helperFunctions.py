@@ -363,6 +363,30 @@ def plotLossCurve(history, loss_name = 'loss',
     plt.xlabel('Epochs')
     plt.legend();
 
+
+def plotLossCurve_PyTorch(history, loss_name = 'loss', 
+                  figuresize = (5,4), 
+                  ylim = None):
+    """
+    Plots the loss curves
+    Args:
+        history: returned from the model training
+        loss_name: name of loss function used
+        figuresize: figsize parameter for matplotlib - a tuple (5,4)
+        ylim: y-axis limits
+    """
+    epochs = np.arange(0, len(history[loss_name]))
+    plt.figure(figsize = figuresize)
+    #plt.style.use('ggplot')
+    plt.plot(epochs, history[loss_name], label = loss_name)
+    plt.plot(epochs, history['val_' + loss_name], label = 'validation')
+    if ylim:
+        plt.ylim = ylim
+
+    plt.ylabel(loss_name)
+    plt.xlabel('Epochs')
+    plt.legend();
+
 # if __name__ == '__main__':
 #     fname = 'Pneumonia.zip'
 #     subfolder = 'Medical'
