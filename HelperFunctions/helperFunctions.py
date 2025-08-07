@@ -383,7 +383,7 @@ def plotLossCurve_PyTorch(history, train_loss_name = 'train_loss',
     if ylim:
         plt.ylim = ylim
 
-    plt.ylabel(loss_name)
+    plt.ylabel('Loss')
     plt.xlabel('Epochs')
     plt.legend();
 
