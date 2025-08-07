@@ -88,3 +88,70 @@ def plotTrainingCurves(train_metric, val_metric, title='Metric', figuresize=(5, 
     plt.xlabel('Epochs')
     plt.legend()
     plt.show()
+
+def plot_training_history(history, 
+                          train_loss_name='train_loss', 
+                          val_loss_name='val_loss', 
+                          train_acc_name='train_acc',
+                          val_acc_name='val_acc',
+                          figuresize=(12, 5)):
+    """
+    Plots the loss and accuracy curves side-by-side.
+
+    This function is compatible with a history dictionary from either a manual
+    logging method (containing Python lists) or from PyTorch Lightning's logger
+    (containing Tensors). It also handles the common scenario where the
+    validation history has one more data point than the training history.
+
+    Args:
+        history (dict): A dictionary containing training history.
+        train_loss_name (str): Key for training loss in the history dictionary.
+        val_loss_name (str): Key for validation loss in the history dictionary.
+        train_acc_name (str): Key for training accuracy in the history dictionary.
+        val_acc_name (str): Key for validation accuracy in the history dictionary.
+        figuresize (tuple): Figure size for matplotlib, e.g., (12, 5).
+    """
+
+    # Check if the history values are PyTorch Tensors and convert if necessary
+    def to_numpy(data):
+        if isinstance(data, torch.Tensor):
+            return data.cpu().numpy()
+        return data
+
+    train_loss = to_numpy(history[train_loss_name])
+    val_loss = to_numpy(history[val_loss_name])
+    train_acc = to_numpy(history[train_acc_name])
+    val_acc = to_numpy(history[val_acc_name])
+
+    # Handle the length mismatch (validation history has 1 more element)
+    if len(val_loss) > len(train_loss):
+        val_loss = val_loss[1:]
+    if len(val_acc) > len(train_acc):
+        val_acc = val_acc[1:]
+    
+    epochs = np.arange(0, len(train_loss))
+
+    # Create a figure with two subplots side-by-side
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figuresize)
+    fig.suptitle('Model Performance', fontsize=16)
+
+    # Plot Loss on the first subplot
+    ax1.plot(epochs, train_loss, label='Training Loss')
+    ax1.plot(epochs, val_loss, label='Validation Loss')
+    ax1.set_title('Loss')
+    ax1.set_ylabel('Loss')
+    ax1.set_xlabel('Epochs')
+    ax1.legend()
+    ax1.grid(True)
+
+    # Plot Accuracy on the second subplot
+    ax2.plot(epochs, train_acc, label='Training Accuracy')
+    ax2.plot(epochs, val_acc, label='Validation Accuracy')
+    ax2.set_title('Accuracy')
+    ax2.set_ylabel('Accuracy')
+    ax2.set_xlabel('Epochs')
+    ax2.legend()
+    ax2.grid(True)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.show()
