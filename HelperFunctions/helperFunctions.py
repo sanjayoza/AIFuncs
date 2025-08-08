@@ -77,7 +77,7 @@ def downloadFromCloud(cloudfile, subfolder = None, COLAB = False, isZipped = Fal
             srcpath = subfolder + '/' + cloudfile
             destpath = dest
         else:
-            destpath = dest + '/' + cloudfile
+            destpath = dest
             srcpath = cloudfile
     else:
         dest = '../datasets'
