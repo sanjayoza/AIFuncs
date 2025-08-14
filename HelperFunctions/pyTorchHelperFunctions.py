@@ -212,7 +212,7 @@ def plot_training_history_early_stopping(history,
     # Accuracy plot
     ax2.plot(epochs, train_acc, label='Training Accuracy')
     ax2.plot(epochs, val_acc, label='Validation Accuracy')
-    ax2.axvline(best_epoch, color='red', linestyle='--', label=f'Early Stop @ {best_epoch}')
+    ax2.axvline(best_epoch, color='black', linestyle='--', label=f'Early Stop @ {best_epoch}')
     ax2.set_title('Accuracy')
     ax2.set_ylabel('Accuracy')
     ax2.set_xlabel('Epochs')
