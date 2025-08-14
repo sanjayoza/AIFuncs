@@ -97,45 +97,37 @@ def plot_training_history(history,
                           figuresize=(12, 5)):
     """
     Plots the loss and accuracy curves side-by-side.
-
-    This function is compatible with a history dictionary from either a manual
-    logging method (containing Python lists) or from PyTorch Lightning's logger
-    (containing Tensors). It also handles the common scenario where the
-    validation history has one more data point than the training history.
-
-    Args:
-        history (dict): A dictionary containing training history.
-        train_loss_name (str): Key for training loss in the history dictionary.
-        val_loss_name (str): Key for validation loss in the history dictionary.
-        train_acc_name (str): Key for training accuracy in the history dictionary.
-        val_acc_name (str): Key for validation accuracy in the history dictionary.
-        figuresize (tuple): Figure size for matplotlib, e.g., (12, 5).
+    Handles mismatched lengths and tensor/list formats.
     """
 
-    # Check if the history values are PyTorch Tensors and convert if necessary
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import torch
+
     def to_numpy(data):
         if isinstance(data, torch.Tensor):
-            return data.cpu().numpy()
-        return data
+            return data.detach().cpu().numpy()
+        elif isinstance(data, list) and isinstance(data[0], torch.Tensor):
+            return np.array([x.item() for x in data])
+        return np.array(data)
 
     train_loss = to_numpy(history[train_loss_name])
     val_loss = to_numpy(history[val_loss_name])
     train_acc = to_numpy(history[train_acc_name])
     val_acc = to_numpy(history[val_acc_name])
 
-    # Handle the length mismatch (validation history has 1 more element)
-    if len(val_loss) > len(train_loss):
-        val_loss = val_loss[1:]
-    if len(val_acc) > len(train_acc):
-        val_acc = val_acc[1:]
-    
-    epochs = np.arange(0, len(train_loss))
+    # Trim validation metrics if they’re longer than training
+    min_len = min(len(train_loss), len(val_loss))
+    train_loss = train_loss[:min_len]
+    val_loss = val_loss[:min_len]
+    train_acc = train_acc[:min_len]
+    val_acc = val_acc[:min_len]
 
-    # Create a figure with two subplots side-by-side
+    epochs = np.arange(min_len)
+
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figuresize)
     fig.suptitle('Model Performance', fontsize=16)
 
-    # Plot Loss on the first subplot
     ax1.plot(epochs, train_loss, label='Training Loss')
     ax1.plot(epochs, val_loss, label='Validation Loss')
     ax1.set_title('Loss')
@@ -144,9 +136,83 @@ def plot_training_history(history,
     ax1.legend()
     ax1.grid(True)
 
-    # Plot Accuracy on the second subplot
     ax2.plot(epochs, train_acc, label='Training Accuracy')
     ax2.plot(epochs, val_acc, label='Validation Accuracy')
+    ax2.set_title('Accuracy')
+    ax2.set_ylabel('Accuracy')
+    ax2.set_xlabel('Epochs')
+    ax2.legend()
+    ax2.grid(True)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.show()
+
+
+def plot_training_history_early_stopping(history, 
+                          train_loss_name='train_loss', 
+                          val_loss_name='val_loss', 
+                          train_acc_name='train_acc',
+                          val_acc_name='val_acc',
+                          monitor='val_loss',
+                          mode='min',
+                          figuresize=(12, 5)):
+    """
+    Plots training and validation loss/accuracy with early stopping marker.
+    Based on the early stopping used, please the appropriate metric
+    e.g. plot_training_history_early_stopping(history, monitor='val_loss', mode='min')
+    """
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import torch
+
+    def to_numpy(data):
+        if isinstance(data, torch.Tensor):
+            return data.detach().cpu().numpy()
+        elif isinstance(data, list) and isinstance(data[0], torch.Tensor):
+            return np.array([x.item() for x in data])
+        return np.array(data)
+
+    train_loss = to_numpy(history[train_loss_name])
+    val_loss = to_numpy(history[val_loss_name])
+    train_acc = to_numpy(history[train_acc_name])
+    val_acc = to_numpy(history[val_acc_name])
+
+    # Trim to shortest length
+    min_len = min(len(train_loss), len(val_loss))
+    train_loss = train_loss[:min_len]
+    val_loss = val_loss[:min_len]
+    train_acc = train_acc[:min_len]
+    val_acc = val_acc[:min_len]
+    epochs = np.arange(min_len)
+
+    # Determine early stopping epoch
+    monitor_values = to_numpy(history[monitor])[:min_len]
+    if mode == 'min':
+        best_epoch = np.argmin(monitor_values)
+    elif mode == 'max':
+        best_epoch = np.argmax(monitor_values)
+    else:
+        raise ValueError("mode must be 'min' or 'max'")
+
+    # Plotting
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figuresize)
+    fig.suptitle('Model Performance', fontsize=16)
+
+    # Loss plot
+    ax1.plot(epochs, train_loss, label='Training Loss')
+    ax1.plot(epochs, val_loss, label='Validation Loss')
+    ax1.axvline(best_epoch, color='black', linestyle='--', label=f'Early Stop @ {best_epoch}')
+    ax1.set_title('Loss')
+    ax1.set_ylabel('Loss')
+    ax1.set_xlabel('Epochs')
+    ax1.legend()
+    ax1.grid(True)
+
+    # Accuracy plot
+    ax2.plot(epochs, train_acc, label='Training Accuracy')
+    ax2.plot(epochs, val_acc, label='Validation Accuracy')
+    ax2.axvline(best_epoch, color='red', linestyle='--', label=f'Early Stop @ {best_epoch}')
     ax2.set_title('Accuracy')
     ax2.set_ylabel('Accuracy')
     ax2.set_xlabel('Epochs')
