@@ -131,7 +131,7 @@ def convert(seconds):
     """
     Convert the time data into hour minutes and seconds
     """
-    return time.strftime("%H:%M:%s", time.gmtime(seconds))
+    return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
 from IPython.display import Markdown, display
 def printmd(string, color=None):
