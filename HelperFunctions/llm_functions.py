@@ -12,7 +12,7 @@ def load_secrets(COLAB=False):
         from google.colab import userdata
         for key in [
             "HF_TOKEN",
-            "GEMINI_API_KEY",
+            "GOOGLE_API_KEY",
             "OPENAI_API_KEY",
         ]:
             value = userdata.get(key)
